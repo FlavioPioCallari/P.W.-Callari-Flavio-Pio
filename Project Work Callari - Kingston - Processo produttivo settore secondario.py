@@ -1,55 +1,70 @@
-import random  # Inserimento libreria per la generazione di numeri casuali
+import random  # Libreria per la generazione di numeri casuali
 
-    # Configurazione dei parametri principali
-def genera_quantita_prodotti(prodotti, max_quantita=1000):
-    """
-    Genera una quantità casuale per ciascun prodotto.
-    """
-    return {prodotto: random.randint(1, max_quantita) for prodotto in prodotti}
+class GeneratoreDati:
+    def __init__(self, prodotti, max_quantita=1000, max_tempo_unitario=15, max_capacita_giornaliera=2000):
+        self.prodotti = prodotti
+        self.max_quantita = max_quantita
+        self.max_tempo_unitario = max_tempo_unitario
+        self.max_capacita_giornaliera = max_capacita_giornaliera
 
-def genera_parametri_produzione(prodotti, max_tempo_unitario=15, max_capacita_giornaliera=2000):
-    """
-    Genera parametri casuali per la produzione:
-    - Tempo di produzione per unità (in minuti)
-    - Capacità massima giornaliera per prodotto
-    """
-    tempi_unitari = {prodotto: random.uniform(1, max_tempo_unitario) for prodotto in prodotti}
-    capacita_giornaliera = {prodotto: random.randint(500, max_capacita_giornaliera) for prodotto in prodotti}
-    return tempi_unitari, capacita_giornaliera
+    def genera_quantita_prodotti(self):
+        """
+        Genera una quantità casuale per ciascun prodotto.
+        Restituisce un dizionario {prodotto: quantità}.
+        """
+        return {prodotto: random.randint(1, self.max_quantita) for prodotto in self.prodotti}
 
-def calcola_tempo_totale_produzione(quantita, tempi_unitari):
-    """
-    Calcola il tempo totale di produzione per il lotto.
-    """
-    return sum(quantita[prodotto] * tempi_unitari[prodotto] for prodotto in quantita)
+    def genera_parametri_produzione(self):
+        """
+        Genera parametri casuali per la produzione:
+        - Tempo di produzione per unità (in minuti)
+        - Capacità massima giornaliera per prodotto
+        Restituisce una tupla (tempi_unitari, capacita_giornaliera).
+        """
+        tempi_unitari = {prodotto: random.uniform(1, self.max_tempo_unitario) for prodotto in self.prodotti}
+        capacita_giornaliera = {prodotto: random.randint(500, self.max_capacita_giornaliera) for prodotto in self.prodotti}
+        return tempi_unitari, capacita_giornaliera
 
-    # Simulazione
-def simula_produzione():
-    prodotti = ["RAM DDR5", "SSD NVMe", "Chiavette USB"]  # Lista dei prodotti
-    max_quantita = 1000
-    max_tempo_unitario = 15  # Minuti
-    max_capacita_giornaliera = 2000  # Unità
+class CalcolatoreProduzione:
+    @staticmethod
+    def calcola_tempo_totale_produzione(quantita, tempi_unitari):
+        """
+        Calcola il tempo totale di produzione per il lotto.
+        Somma il prodotto tra la quantità e il tempo unitario per ciascun prodotto.
+        """
+        return sum(quantita[prodotto] * tempi_unitari[prodotto] for prodotto in quantita)
 
-    # Generazione dei dati
-    quantita = genera_quantita_prodotti(prodotti, max_quantita)
-    tempi_unitari, capacita_giornaliera = genera_parametri_produzione(prodotti, max_tempo_unitario, max_capacita_giornaliera)
+class SimulatoreProduzione:
+    def __init__(self, prodotti=None, max_quantita=1000, max_tempo_unitario=15, max_capacita_giornaliera=2000):
+        if prodotti is None:
+            prodotti = ["RAM DDR5", "SSD NVMe", "Chiavette USB"]
+        self.prodotti = prodotti
+        self.generatore = GeneratoreDati(prodotti, max_quantita, max_tempo_unitario, max_capacita_giornaliera)
+        self.calcolatore = CalcolatoreProduzione()
 
-    # Output dettagliato
-    print("=== Parametri della Produzione ===")
-    print(f"Quantità da produrre per prodotto: {quantita}")
-    print(f"Tempo di produzione per unità (minuti): {tempi_unitari}")
-    print(f"Capacità massima giornaliera per prodotto: {capacita_giornaliera}")
+    def simula_produzione(self):
+        """
+        Esegue l'intero processo produttivo:
+        - Genera dati di produzione
+        - Calcola e visualizza il tempo totale di produzione
+        - Converte il tempo totale in ore e in giorni lavorativi (supponendo turni di 8 ore)
+        """
+        quantita = self.generatore.genera_quantita_prodotti()
+        tempi_unitari, capacita_giornaliera = self.generatore.genera_parametri_produzione()
 
-    # Calcolo del tempo totale
-    tempo_totale = calcola_tempo_totale_produzione(quantita, tempi_unitari)
-    print(f"\nTempo totale di produzione del lotto (minuti): {tempo_totale:.2f}")
+        print("=== Parametri della Produzione ===")
+        print(f"Quantità da produrre per prodotto: {quantita}")
+        print(f"Tempo di produzione per unità (minuti): {tempi_unitari}")
+        print(f"Capacità massima giornaliera per prodotto: {capacita_giornaliera}")
 
-    # Conversione in ore e giorni
-    ore = tempo_totale / 60
-    giorni = tempo_totale / (60 * 8)  # Supponendo turni di 8 ore
-    print(f"Tempo totale in ore: {ore:.2f}")
-    print(f"Tempo totale in giorni lavorativi: {giorni:.2f}")
+        tempo_totale = self.calcolatore.calcola_tempo_totale_produzione(quantita, tempi_unitari)
+        print(f"\nTempo totale di produzione del lotto (minuti): {tempo_totale:.2f}")
 
-    # Esecuzione della simulazione
+        ore = tempo_totale / 60
+        giorni = tempo_totale / (60 * 8)
+        print(f"Tempo totale in ore: {ore:.2f}")
+        print(f"Tempo totale in giorni lavorativi: {giorni:.2f}")
+
 if __name__ == "__main__":
-    simula_produzione()
+    simulatore = SimulatoreProduzione()
+    simulatore.simula_produzione()
